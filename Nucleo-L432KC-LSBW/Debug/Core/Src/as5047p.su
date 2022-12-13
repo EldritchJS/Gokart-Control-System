@@ -1,0 +1,2 @@
+../Core/Src/as5047p.c:22:13:is_parity_even_16	16	static
+../Core/Src/as5047p.c:30:5:spi_as5047p_blocking_read	32	static
