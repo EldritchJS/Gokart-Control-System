@@ -119,6 +119,8 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
+  USART1Init();
+  I2C1Init();
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -128,9 +130,6 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-  IMUInit();
-  I2C1Init();
-  USART1Init();
   /* USER CODE END RTOS_THREADS */
 
 }
