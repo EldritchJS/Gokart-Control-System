@@ -60,9 +60,12 @@ static void processLine(void)
     	  osTimerStop(consoleTimer);
     	  USART1TxStr("Ending Streaming\r\n");
     	}
-    	USART1TxStr(lineBuffer);
-    	USART1TxStr("\r\n");
     	break;
+    case '?':
+    	if(streamActiveFlag==0)
+    	{
+          USART1TxStr("B - Begin streaming\r\nE - End streaming\r\n? - This menu\r\n");
+    	}
     default:
     	break;
   }
