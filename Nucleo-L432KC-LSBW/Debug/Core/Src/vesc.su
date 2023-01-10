@@ -1,4 +1,0 @@
-../Core/Src/vesc.c:15:5:vesc_get_payload_offset	16	static
-../Core/Src/vesc.c:23:5:vesc_encode_packet	32	static
-../Core/Src/vesc.c:54:5:vesc_set_current	32	static
-../Core/Src/vesc.c:68:5:vesc_set_rpm	32	static

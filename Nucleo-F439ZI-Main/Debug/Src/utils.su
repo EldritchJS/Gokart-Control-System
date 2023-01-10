@@ -1,5 +1,0 @@
-../Src/utils.c:6:6:debug_sizeof	24	static
-../Src/utils.c:21:6:print_byte_as_bits	24	static
-../Src/utils.c:29:6:debug_bytes	24	static
-../Src/utils.c:48:6:print_bytes	24	static
-../Src/utils.c:59:6:convert_to_bits_string	32	static

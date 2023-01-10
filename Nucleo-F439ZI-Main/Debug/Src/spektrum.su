@@ -1,5 +1,0 @@
-../Src/spektrum.c:20:6:spektrum_packet_to_msg	32	static
-../Src/spektrum.c:39:6:spektrum_init	16	static
-../Src/spektrum.c:43:6:spektrum_process_data	48	static
-../Src/spektrum.c:102:6:spektrum_msg_to_state	40	static
-../Src/spektrum.c:133:6:spektrum_reset_state_stats	16	static
