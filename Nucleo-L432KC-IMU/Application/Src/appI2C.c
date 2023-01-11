@@ -5,14 +5,14 @@
 #include <string.h>
  
 static osMessageQId I2CRXEventQueue;
-static uint8_t I2C1RXEventQueueBuffer[ 16 * sizeof( uint8_t ) ];
+static uint8_t I2C1RXEventQueueBuffer[ 1 * sizeof( uint8_t ) ];
 static osStaticMessageQDef_t I2C1RXEventQueueControlBlock;
-osMessageQStaticDef(I2C1RXEventQueue, 16, uint8_t, I2C1RXEventQueueBuffer, &I2C1RXEventQueueControlBlock);
+osMessageQStaticDef(I2C1RXEventQueue, 1, uint8_t, I2C1RXEventQueueBuffer, &I2C1RXEventQueueControlBlock);
 
 static osMessageQId I2CTXEventQueue;
-static uint8_t I2C1TXEventQueueBuffer[ 16 * sizeof( uint8_t ) ];
+static uint8_t I2C1TXEventQueueBuffer[ 1 * sizeof( uint8_t ) ];
 static osStaticMessageQDef_t I2C1TXEventQueueControlBlock;
-osMessageQStaticDef(I2C1TXEventQueue, 16, uint8_t, I2C1TXEventQueueBuffer, &I2C1TXEventQueueControlBlock);
+osMessageQStaticDef(I2C1TXEventQueue, 1, uint8_t, I2C1TXEventQueueBuffer, &I2C1TXEventQueueControlBlock);
 
 static osMutexId I2CMutex;
 static osStaticMutexDef_t I2C1MutexControlBlock;

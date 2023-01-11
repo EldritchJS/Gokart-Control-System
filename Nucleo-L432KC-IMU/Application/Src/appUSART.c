@@ -35,10 +35,10 @@ static uint32_t         tail = 0;
 static BOOL USART1RxDataAvailable(void);
 
 static osMessageQId USARTRXEventQueue;
-static uint8_t USART1RXEventQueueBuffer[ 32 * sizeof( uint8_t ) ];
+static uint8_t USART1RXEventQueueBuffer[ 1 * sizeof( uint8_t ) ];
 static osStaticMessageQDef_t USART1RXEventQueueControlBlock;
 
-osMessageQStaticDef(USART1RXEventQueue, 32, uint8_t, USART1RXEventQueueBuffer, &USART1RXEventQueueControlBlock);
+osMessageQStaticDef(USART1RXEventQueue, 1, uint8_t, USART1RXEventQueueBuffer, &USART1RXEventQueueControlBlock);
 
 static osMutexId USARTMutex;
 static osStaticMutexDef_t USART1MutexControlBlock;
