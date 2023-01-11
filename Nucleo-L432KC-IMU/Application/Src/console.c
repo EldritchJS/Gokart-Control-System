@@ -19,8 +19,9 @@ static float magnetic_field_mgauss[3];
 static void processLine(void);
 static void consoleTimerCallback(void const *arg);
 static osTimerId consoleTimer;
+static osStaticTimerDef_t consoleTimerCB;
 
-osTimerDef(ConsoleTimer, consoleTimerCallback);
+osTimerStaticDef(ConsoleTimer, consoleTimerCallback, &consoleTimerCB);
 
 static void consoleTimerCallback(void const *arg)
 {
