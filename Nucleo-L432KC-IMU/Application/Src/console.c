@@ -30,14 +30,10 @@ static void consoleTimerCallback(void const *arg)
   GetIMUReading(acceleration_mg, angular_rate_mdps, magnetic_field_mgauss);
 
   sprintf((char *)outBuffer,
-          "IMU - [mg]:%4.2f\t%4.2f\t%4.2f\t[mdps]:%4.2f\t%4.2f\t%4.2f\r\n",
+          "%4.2f,%4.2f,%4.2f%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f\r\n",
           acceleration_mg[0], acceleration_mg[1], acceleration_mg[2],
-          angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2]);
-  USART1TxStr((char *)outBuffer);
-
-  sprintf(outBuffer, "MAG - [mG]:%4.2f\t%4.2f\t%4.2f\r\n",
-          magnetic_field_mgauss[0], magnetic_field_mgauss[1],
-          magnetic_field_mgauss[2]);
+          angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2],
+          magnetic_field_mgauss[0], magnetic_field_mgauss[1], magnetic_field_mgauss[2]);
   USART1TxStr(outBuffer);
 
 }
@@ -50,8 +46,8 @@ static void processLine(void)
     	if(streamActiveFlag==0)
     	{
     	  streamActiveFlag=1;
-    	  USART1TxStr("Beginning Streaming\r\n");
-    	  osTimerStart(consoleTimer, 100);
+    	  USART1TxStr("AccXmg,AccYmg,AccZmg,GyrXmd,GyrYmd,GyrZmd,MagXmG,MagYmG,MagZmG\r\n");
+    	  osTimerStart(consoleTimer, 25);
     	}
 	    break;
     case 'E':
@@ -59,7 +55,6 @@ static void processLine(void)
     	{
       	  streamActiveFlag=0;
     	  osTimerStop(consoleTimer);
-    	  USART1TxStr("Ending Streaming\r\n");
     	}
     	break;
     case '?':
