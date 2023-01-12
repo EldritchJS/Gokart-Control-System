@@ -1,7 +1,0 @@
-../Src/app.c:24:13:joy_steer_to_steer	32	static
-../Src/app.c:36:13:joy_throttle_to_throttle	24	static
-../Src/app.c:59:13:joy_switch_to_power	24	static
-../Src/app.c:69:13:convert_channels_to_commands	16	static
-../Src/app.c:75:13:handle_spektrum_msg	32	static
-../Src/app.c:90:6:app_debug_loop	16	static
-../Src/app.c:94:6:app_run	24	static
