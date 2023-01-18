@@ -30,7 +30,7 @@ static void consoleTimerCallback(void const *arg)
   GetIMUReading(acceleration_mg, angular_rate_mdps, magnetic_field_mgauss);
 
   sprintf((char *)outBuffer,
-          "%4.2f,%4.2f,%4.2f%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f\r\n",
+          "%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f\r\n",
           acceleration_mg[0], acceleration_mg[1], acceleration_mg[2],
           angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2],
           magnetic_field_mgauss[0], magnetic_field_mgauss[1], magnetic_field_mgauss[2]);
