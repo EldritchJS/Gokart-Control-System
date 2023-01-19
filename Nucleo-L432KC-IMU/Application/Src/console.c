@@ -7,6 +7,8 @@
 #include "memsTask.h"
 #include "console.h"
 
+#define HEADER_STR "Quaternion0,Quaternion1,Quaternion2,Quaternion3,Rotationn0,Rotation1,Rotation2,Gravity0,Gravity1,Gravity2,LinearAcceleration0,LinearAcceleration1,LinearAcceleration2,Heading,HeadingError"
+
 static char lineBuffer[1024];
 static char outBuffer[1024];
 
@@ -35,7 +37,8 @@ static void processLine(void)
     	if(streamActiveFlag==0)
     	{
     	  streamActiveFlag=1;
-    	  USART1TxStr("Qua,Qua1,Qua2,Qua3,Rot0,Rot1,Rot2,Gra0,Gra1,Gra2,LAx0,LAx1,LAx2,Hdng,HErr\r\n");
+    	  sprintf(outBuffer, "%s\r\n", HEADER_STR);
+    	  USART1TxStr(outBuffer);
     	  osTimerStart(consoleTimer, 10);
     	}
 	    break;
