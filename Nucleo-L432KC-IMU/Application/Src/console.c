@@ -4,6 +4,7 @@
 #include <string.h>
 #include "appUSART.h"
 #include "appLSM9DS1.h"
+#include "memsTask.h"
 #include "console.h"
 
 static char lineBuffer[1024];
@@ -11,10 +12,6 @@ static char outBuffer[1024];
 
 static uint8_t lineIndex = 0;
 static uint8_t streamActiveFlag = 0;
-
-static float acceleration_mg[3];
-static float angular_rate_mdps[3];
-static float magnetic_field_mgauss[3];
 
 static void processLine(void);
 static void consoleTimerCallback(void const *arg);
@@ -27,15 +24,7 @@ static void consoleTimerCallback(void const *arg)
 {
   (void) arg;
 
-  GetIMUReading(acceleration_mg, angular_rate_mdps, magnetic_field_mgauss);
-
-  sprintf((char *)outBuffer,
-          "%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f\r\n",
-          acceleration_mg[0], acceleration_mg[1], acceleration_mg[2],
-          angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2],
-          magnetic_field_mgauss[0], magnetic_field_mgauss[1], magnetic_field_mgauss[2]);
-  USART1TxStr(outBuffer);
-
+  osMessagePut(MEMSTaskRXEventQueue, 0, 0);
 }
 
 static void processLine(void)
@@ -46,8 +35,8 @@ static void processLine(void)
     	if(streamActiveFlag==0)
     	{
     	  streamActiveFlag=1;
-    	  USART1TxStr("AccXmg,AccYmg,AccZmg,GyrXmd,GyrYmd,GyrZmd,MagXmG,MagYmG,MagZmG\r\n");
-    	  osTimerStart(consoleTimer, 25);
+    	  USART1TxStr("Qua,Qua1,Qua2,Qua3,Rot0,Rot1,Rot2,Gra0,Gra1,Gra2,LAx0,LAx1,LAx2,Hdng,HErr\r\n");
+    	  osTimerStart(consoleTimer, 10);
     	}
 	    break;
     case 'E':
@@ -57,12 +46,26 @@ static void processLine(void)
     	  osTimerStop(consoleTimer);
     	}
     	break;
+    case 'V':
+    	if(streamActiveFlag==0)
+    	{
+    	  sprintf(outBuffer, "Version 0.1.13\r\n");
+          USART1TxStr(outBuffer);
+    	}
+    	break;
     case '?':
     	if(streamActiveFlag==0)
     	{
-          USART1TxStr("B - Begin streaming\r\nE - End streaming\r\n? - This menu\r\n");
+    	  sprintf(outBuffer, "Menu\r\nB - Begin Streaming\r\nE - End Streaming\r\nV - Print Version\r\n? - This menu\r\n");
+          USART1TxStr(outBuffer);
     	}
+    	break;
     default:
+    	if(streamActiveFlag==0)
+    	{
+    	  sprintf(outBuffer, "Unknown command: %c",lineBuffer[0]);
+          USART1TxStr(outBuffer);
+    	}
     	break;
   }
 }

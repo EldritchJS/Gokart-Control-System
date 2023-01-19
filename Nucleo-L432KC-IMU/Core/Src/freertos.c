@@ -29,6 +29,7 @@
 #include "appI2C.h"
 #include "appUSART.h"
 #include "console.h"
+#include "memsTask.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -130,6 +131,7 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
+  memsTaskInit();
   /* USER CODE END RTOS_THREADS */
 
 }
