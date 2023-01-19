@@ -52,7 +52,7 @@ static void processLine(void)
     case 'V':
     	if(streamActiveFlag==0)
     	{
-    	  sprintf(outBuffer, "Version 0.1.13\r\n");
+    	  sprintf(outBuffer, "Version: %s\r\n", VERSION_STR);
           USART1TxStr(outBuffer);
     	}
     	break;
