@@ -1,4 +1,4 @@
-#include "cmsis_os.h"
+#include "cmsis_os2.h"
 #include "main.h"
 #include <stdio.h>
 #include <string.h>
@@ -26,6 +26,14 @@
         FIFO_RX_SIZE / (115200/10) = 100/(115200/10) = 8.68ms  
 ------------------------------------------------------------------------------*/
 
+extern osMessageQueueId_t USART1RXEventQueueHandle;
+extern osMutexId_t USART1RXMutexHandle;
+extern osMutexId_t USART1TXMutexHandle;
+
+#define USART1RXMutex USART1RXMutexHandle
+#define USART1TXMutex USART1TXMutexHandle
+#define USART1RXEventQueue USART1RXEventQueueHandle
+
 static FIFO__S          fifoTx;
 uint8_t          	    Fifo_Rx[FIFO_RX_SIZE];
 static uint8_t          Fifo_Tx[FIFO_TX_SIZE];
@@ -33,18 +41,6 @@ static uint32_t         tail = 0;
 
 // local functions
 static BOOL USART1RxDataAvailable(void);
-
-static osMessageQId USARTRXEventQueue;
-static uint8_t USART1RXEventQueueBuffer[ 1 * sizeof( uint8_t ) ];
-static osStaticMessageQDef_t USART1RXEventQueueControlBlock;
-
-osMessageQStaticDef(USART1RXEventQueue, 1, uint8_t, USART1RXEventQueueBuffer, &USART1RXEventQueueControlBlock);
-
-static osMutexId USARTMutex;
-static osStaticMutexDef_t USART1MutexControlBlock;
-
-osMutexStaticDef(USART1Mutex, &USART1MutexControlBlock);
-
 
 /*------------------------------------------------------------------------------
   USART1Init()
@@ -56,9 +52,6 @@ void USART1Init(void)
   if(initializedFlag) { return;                 }
   else                { initializedFlag = TRUE; }
 
-  USARTRXEventQueue = osMessageCreate(osMessageQ(USART1RXEventQueue), NULL);
-
-  USARTMutex = osMutexCreate(osMutex(USART1Mutex));
   memset(Fifo_Rx,0,sizeof(Fifo_Rx));
   memset(Fifo_Tx,0,sizeof(Fifo_Tx));
   FifoInit(&fifoTx,Fifo_Tx,FIFO_TX_SIZE);
@@ -67,25 +60,33 @@ void USART1Init(void)
 
 void RTOS_SignalIfRxDataAvailable(void)
 {
+  uint8_t msg;
+
   if(USART1RxDataAvailable())
   { 
-    osMessagePut(USARTRXEventQueue, 0, 0);
+    osMessageQueuePut(USART1RXEventQueue, &msg, 0, 0);
   }
 }
 
-#define RTOS_Use()    osMutexWait(USARTMutex, osWaitForever)
-#define RTOS_Unuse()  osMutexRelease(USARTMutex)
-
 BOOL USART1RxDataWaitTimed(uint32_t timeout)
 {
-  osEvent evt;
-  evt = osMessageGet(USARTRXEventQueue, timeout);
-  return (evt.status == osEventMessage);
+  osStatus_t status;
+  uint8_t msg;
+
+  status = osMessageQueueGet(USART1RXEventQueue, &msg, NULL, timeout);
+  return (status == osOK);
 }
 
 void USART1RxDataWait(void)
 {
-  osMessageGet(USARTRXEventQueue, osWaitForever);
+  osStatus_t status;
+  uint8_t msg;
+
+  status = osMessageQueueGet(USART1RXEventQueue, &msg, NULL, osWaitForever);
+  if(status != osOK)
+  {
+	  while(1);
+  }
 }
 
  
@@ -106,8 +107,8 @@ BOOL USART1Rx(uint8_t* data)
 {
   BOOL dataAvailableFlag = FALSE;
  
-  RTOS_Use();
- 
+  osMutexAcquire(USART1RXMutex, osWaitForever);
+
   if(USART1RxDataAvailable())
   {
     *data = Fifo_Rx[tail];
@@ -115,8 +116,7 @@ BOOL USART1Rx(uint8_t* data)
     dataAvailableFlag = TRUE;
   }
  
-  RTOS_Unuse();
- 
+  osMutexRelease(USART1RXMutex);
   return dataAvailableFlag;
 }
  
@@ -129,8 +129,7 @@ BOOL USART1Tx(uint8_t data)
 {
   BOOL successFlag = FALSE;
    
-  RTOS_Use();
-   
+  osMutexAcquire(USART1TXMutex, osWaitForever);
   // try to put data into tx fifo
   if(FifoPut(&fifoTx, data))
   {
@@ -140,8 +139,8 @@ BOOL USART1Tx(uint8_t data)
     successFlag = TRUE;
   }
  
-  RTOS_Unuse();
- 
+  osMutexRelease(USART1TXMutex);
+
   return successFlag;
 }
  

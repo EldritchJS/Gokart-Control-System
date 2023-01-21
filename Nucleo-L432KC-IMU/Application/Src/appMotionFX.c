@@ -22,7 +22,7 @@ static MFX_knobs_t *ipKnobs = &iKnobs;
 static volatile int sampleToDiscard = SAMPLETODISCARD;
 static int discardedCount = 0;
 
-static uint8_t mfxstate[STATE_SIZE];
+uint8_t mfxstate[STATE_SIZE];
 
 void motionFXInit(void)
 {

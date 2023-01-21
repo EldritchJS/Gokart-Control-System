@@ -1,10 +1,11 @@
 #include "main.h"
-#include "cmsis_os.h"
+#include "cmsis_os2.h"
 #include <stdio.h>
 #include <string.h>
 #include "appUSART.h"
 #include "appLSM9DS1.h"
 #include "appMotionFX.h"
+#include "console.h"
 #include "memsTask.h"
 
 #define ALGO_FREQ  100U /* Algorithm frequency 100Hz */
@@ -19,9 +20,12 @@
 #define FROM_MGAUSS_TO_UT50  (0.1f/50.0f)
 #define FROM_UT50_TO_MGAUSS  500.0f
 
+extern osTimerId_t taskTimerHandle;
+
 static void acquireMEMS(void);
 static void runFusion(void);
 static void transmitFusionResults(void);
+static void transmitIMUReadings(void);
 
 static float acceleration_mg[3];
 static float angular_rate_mdps[3];
@@ -29,17 +33,9 @@ static float magnetic_field_mgauss[3];
 
 static char outBuffer[1024];
 
+extern osThreadId_t memsTaskHandle;
+
 uint32_t AlgoFreq = ALGO_FREQ;
-
-osMessageQId MEMSTaskRXEventQueue;
-static uint8_t memsTaskRXEventQueueBuffer[ 1 * sizeof( uint8_t ) ];
-static osStaticMessageQDef_t memsTaskRXEventQueueControlBlock;
-osMessageQStaticDef(memsTaskRXEventQueue, 1, uint8_t, memsTaskRXEventQueueBuffer, &memsTaskRXEventQueueControlBlock);
-
-osThreadId memsTaskHandle;
-uint32_t memsTaskBuffer[ 128 ];
-osStaticThreadDef_t memsTaskControlBlock;
-osThreadStaticDef(MEMSTask, memsTask, osPriorityNormal, 0, 128, memsTaskBuffer, &memsTaskControlBlock);
 
 MFX_input_t data_in;
 MFX_input_t *pdata_in = &data_in;
@@ -71,6 +67,17 @@ static void runFusion(void)
   motionFXRun(pdata_in, pdata_out, MOTION_FX_ENGINE_DELTATIME);
 }
 
+static void transmitIMUReadings(void)
+{
+  sprintf((char *)outBuffer,
+	          "%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f\r\n",
+	          acceleration_mg[0], acceleration_mg[1], acceleration_mg[2],
+	          angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2],
+	          magnetic_field_mgauss[0], magnetic_field_mgauss[1], magnetic_field_mgauss[2]);
+  USART1TxStr(outBuffer);
+}
+
+
 static void transmitFusionResults(void)
 {
   sprintf((char *)outBuffer,
@@ -83,25 +90,29 @@ static void transmitFusionResults(void)
   USART1TxStr(outBuffer);
 }
 
-void memsTaskInit(void)
+void MEMSTask(void *argument)
 {
+  (void) argument;
+
   IMUInit();
-  MEMSTaskRXEventQueue = osMessageCreate(osMessageQ(memsTaskRXEventQueue), NULL);
-  memsTaskHandle = osThreadCreate(osThread(MEMSTask), NULL);
   motionFXInit();
-}
-
-void memsTask(void const * arg)
-{
-  (void) arg;
-
   motionFXStart();
-
+  osTimerStart(taskTimerHandle, 25);
   for(;;)
   {
-	osMessageGet(MEMSTaskRXEventQueue, osWaitForever);
+    osThreadSuspend(memsTaskHandle);
     acquireMEMS();
     runFusion();
-    transmitFusionResults();
+    if(isStreamActive())
+    {
+      if (isFusionSet())
+      {
+        transmitFusionResults();
+      }
+      else
+      {
+        transmitIMUReadings();
+      }
+    }
   }
 }

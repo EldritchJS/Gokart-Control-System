@@ -73,7 +73,7 @@ void Error_Handler(void);
 #define LD3_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
-#define VERSION_STR "0.1.14"
+#define VERSION_STR "0.1.15"
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
