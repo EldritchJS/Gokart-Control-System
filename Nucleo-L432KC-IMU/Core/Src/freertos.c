@@ -56,7 +56,7 @@ typedef StaticSemaphore_t osStaticMutexDef_t;
 /* USER CODE END Variables */
 /* Definitions for consoleTask */
 osThreadId_t consoleTaskHandle;
-uint32_t consoleTaskBuffer[ 128 ];
+uint32_t consoleTaskBuffer[ 512 ];
 osStaticThreadDef_t consoleTaskControlBlock;
 const osThreadAttr_t consoleTask_attributes = {
   .name = "consoleTask",
@@ -68,7 +68,7 @@ const osThreadAttr_t consoleTask_attributes = {
 };
 /* Definitions for memsTask */
 osThreadId_t memsTaskHandle;
-uint32_t memsTaskBuffer[ 128 ];
+uint32_t memsTaskBuffer[ 1024 ];
 osStaticThreadDef_t memsTaskControlBlock;
 const osThreadAttr_t memsTask_attributes = {
   .name = "memsTask",
@@ -135,14 +135,6 @@ const osMutexAttr_t I2C1Mutex_attributes = {
   .cb_mem = &I2C1MutexControlBlock,
   .cb_size = sizeof(I2C1MutexControlBlock),
 };
-/* Definitions for myMutex03 */
-osMutexId_t myMutex03Handle;
-osStaticMutexDef_t myMutex03ControlBlock;
-const osMutexAttr_t myMutex03_attributes = {
-  .name = "myMutex03",
-  .cb_mem = &myMutex03ControlBlock,
-  .cb_size = sizeof(myMutex03ControlBlock),
-};
 /* Definitions for USART1TXMutex */
 osMutexId_t USART1TXMutexHandle;
 osStaticMutexDef_t USART1TXMutexControlBlock;
@@ -178,9 +170,6 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of I2C1Mutex */
   I2C1MutexHandle = osMutexNew(&I2C1Mutex_attributes);
-
-  /* creation of myMutex03 */
-  myMutex03Handle = osMutexNew(&myMutex03_attributes);
 
   /* creation of USART1TXMutex */
   USART1TXMutexHandle = osMutexNew(&USART1TXMutex_attributes);
