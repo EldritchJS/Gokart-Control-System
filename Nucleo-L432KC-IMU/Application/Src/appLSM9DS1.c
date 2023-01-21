@@ -111,10 +111,7 @@ void IMUInit(void)
 
   if (whoamI.imu != LSM9DS1_IMU_ID || whoamI.mag != LSM9DS1_MAG_ID)
   {
-	while (1)
-	{
-	  osDelay(1);
-	}
+    USART1TxStr("whoami failed\r\n");
   }
   else
   {
@@ -139,16 +136,17 @@ void IMUInit(void)
    lsm9ds1_gy_filter_out_path_set(&dev_ctx_imu,
                                   LSM9DS1_LPF1_HPF_LPF2_OUT);
    /* Set Output Data Rate / Power mode */
-   lsm9ds1_imu_data_rate_set(&dev_ctx_imu, LSM9DS1_IMU_59Hz5);
-   lsm9ds1_mag_data_rate_set(&dev_ctx_mag, LSM9DS1_MAG_UHP_10Hz);
+   lsm9ds1_imu_data_rate_set(&dev_ctx_imu, LSM9DS1_IMU_119Hz);
+   lsm9ds1_mag_data_rate_set(&dev_ctx_mag, LSM9DS1_MAG_UHP_40Hz);
 }
 
 static int32_t stm32l4_write_imu(void *handle, uint8_t reg,
                                   const uint8_t *bufp, uint16_t len)
 {
   sensbus_t *sensbus = (sensbus_t *)handle;
-
-  I2C1Tx(sensbus->i2c_address, reg, (uint8_t*) bufp, len);
+  HAL_I2C_Mem_Write(sensbus->hbus, sensbus->i2c_address, reg,
+                    I2C_MEMADD_SIZE_8BIT, (uint8_t*) bufp, len, 1000);
+  //I2C1Tx(sensbus->i2c_address, reg, (uint8_t*) bufp, len);
 
   return 0;
 }
@@ -158,7 +156,9 @@ static int32_t stm32l4_read_imu(void *handle, uint8_t reg,
 {
   sensbus_t *sensbus = (sensbus_t *)handle;
 
-  I2C1Rx(sensbus->i2c_address, reg, (uint8_t*) bufp, len);
+  HAL_I2C_Mem_Read(sensbus->hbus, sensbus->i2c_address, reg,
+                     I2C_MEMADD_SIZE_8BIT, bufp, len, 1000);
+  //I2C1Rx(sensbus->i2c_address, reg, (uint8_t*) bufp, len);
 
   return 0;
 }
@@ -169,7 +169,10 @@ static int32_t stm32l4_write_mag(void *handle, uint8_t reg,
   sensbus_t *sensbus = (sensbus_t *)handle;
 
   reg |= 0x80;
-  I2C1Tx(sensbus->i2c_address, reg, (uint8_t*) bufp, len);
+
+  HAL_I2C_Mem_Write(sensbus->hbus, sensbus->i2c_address, reg,
+                    I2C_MEMADD_SIZE_8BIT, (uint8_t*) bufp, len, 1000);
+  //I2C1Tx(sensbus->i2c_address, reg, (uint8_t*) bufp, len);
 
   return 0;
 }
@@ -179,7 +182,10 @@ static int32_t stm32l4_read_mag(void *handle, uint8_t reg,
 {
   sensbus_t *sensbus = (sensbus_t *)handle;
   reg |= 0x80;
-  I2C1Rx(sensbus->i2c_address, reg, (uint8_t*) bufp, len);
+
+  HAL_I2C_Mem_Read(sensbus->hbus, sensbus->i2c_address, reg,
+                     I2C_MEMADD_SIZE_8BIT, bufp, len, 1000);
+  //I2C1Rx(sensbus->i2c_address, reg, (uint8_t*) bufp, len);
 
   return 0;
 }

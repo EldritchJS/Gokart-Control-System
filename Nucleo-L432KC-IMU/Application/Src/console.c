@@ -1,45 +1,37 @@
 #include "main.h"
-#include "cmsis_os.h"
+#include "cmsis_os2.h"
+#include "freertos.h"
 #include <stdio.h>
 #include <string.h>
 #include "appUSART.h"
 #include "appLSM9DS1.h"
+#include "memsTask.h"
+#include "timers.h"
 #include "console.h"
+
+extern osThreadId_t memsTaskHandle;
+extern osTimerId_t taskTimerHandle;
+
+#define FUSION_HEADER_STR "Quaternion0,Quaternion1,Quaternion2,Quaternion3,Rotationn0,Rotation1,Rotation2,Gravity0,Gravity1,Gravity2,LinearAcceleration0,LinearAcceleration1,LinearAcceleration2,Heading,HeadingError"
+#define RAW_HEADER_STR "AccelX,AccelY,AccelZ,GyroX,GyroY,GyroZ,MagX,MagY,MagZ"
 
 static char lineBuffer[1024];
 static char outBuffer[1024];
 
-static uint8_t lineIndex = 0;
+static uint16_t lineIndex = 0;
 static uint8_t streamActiveFlag = 0;
-
-static float acceleration_mg[3];
-static float angular_rate_mdps[3];
-static float magnetic_field_mgauss[3];
+static uint8_t fusionSet = 0;
 
 static void processLine(void);
-static void consoleTimerCallback(void const *arg);
-static osTimerId consoleTimer;
-static osStaticTimerDef_t consoleTimerCB;
 
-osTimerStaticDef(ConsoleTimer, consoleTimerCallback, &consoleTimerCB);
-
-static void consoleTimerCallback(void const *arg)
+uint8_t isFusionSet(void)
 {
-  (void) arg;
+  return fusionSet;
+}
 
-  GetIMUReading(acceleration_mg, angular_rate_mdps, magnetic_field_mgauss);
-
-  sprintf((char *)outBuffer,
-          "IMU - [mg]:%4.2f\t%4.2f\t%4.2f\t[mdps]:%4.2f\t%4.2f\t%4.2f\r\n",
-          acceleration_mg[0], acceleration_mg[1], acceleration_mg[2],
-          angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2]);
-  USART1TxStr((char *)outBuffer);
-
-  sprintf(outBuffer, "MAG - [mG]:%4.2f\t%4.2f\t%4.2f\r\n",
-          magnetic_field_mgauss[0], magnetic_field_mgauss[1],
-          magnetic_field_mgauss[2]);
-  USART1TxStr(outBuffer);
-
+uint8_t isStreamActive(void)
+{
+  return streamActiveFlag;
 }
 
 static void processLine(void)
@@ -50,16 +42,31 @@ static void processLine(void)
     	if(streamActiveFlag==0)
     	{
     	  streamActiveFlag=1;
-    	  USART1TxStr("Beginning Streaming\r\n");
-    	  osTimerStart(consoleTimer, 100);
+    	  sprintf(outBuffer, "%s\r\n", (fusionSet==1)?(FUSION_HEADER_STR):(RAW_HEADER_STR));
+    	  USART1TxStr(outBuffer);
+//    	  osTimerStart(taskTimerHandle, 25);
     	}
 	    break;
     case 'E':
     	if(streamActiveFlag==1)
     	{
       	  streamActiveFlag=0;
-    	  osTimerStop(consoleTimer);
-    	  USART1TxStr("Ending Streaming\r\n");
+//      	  osTimerStop(taskTimerHandle);
+    	}
+    	break;
+    case 'F':
+    	if(streamActiveFlag==0)
+    	{
+    	  fusionSet=(fusionSet==1)?0:1;
+    	  sprintf(outBuffer, "Fusion is %s\r\n",(fusionSet==1)?("set"):("not set"));
+    	  USART1TxStr(outBuffer);
+    	}
+    	break;
+    case 'V':
+    	if(streamActiveFlag==0)
+    	{
+    	  sprintf(outBuffer, "Version: %s\r\n", VERSION_STR);
+    	  USART1TxStr(outBuffer);
     	}
     	break;
     case '?':
@@ -72,12 +79,12 @@ static void processLine(void)
   }
 }
 
-void console(void)
+void ConsoleTask(void *argument)
 {
+  (void) argument;
+
   uint8_t data;
 
-  consoleTimer = osTimerCreate(osTimer(ConsoleTimer), osTimerPeriodic, NULL);
-  IMUInit();
   for(;;)
   {
 	USART1RxDataWait();
@@ -95,6 +102,5 @@ void console(void)
         lineIndex++;
       }
     }
-    osDelay(1);
   }
 }
