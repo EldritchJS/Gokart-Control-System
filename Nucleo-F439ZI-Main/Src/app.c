@@ -26,10 +26,10 @@ static void joy_steer_to_steer(app_state_t *app){
 
 	if (joy_steer > SPEKTRUM_STEER_NEUTRAL){
 		float steering_percent = ((float) joy_steer - (float)SPEKTRUM_STEER_NEUTRAL) / ((float)SPEKTRUM_STEER_MAX - (float)SPEKTRUM_STEER_NEUTRAL);
-		app->steering_angle = steering_percent * GOKART_STEER_MAX + GOKART_STEER_MAX;
+		app->steering_angle = steering_percent * GOKART_STEER_MAX + GOKART_STEER_MAX - 2;
 	} else{
 		float steering_percent = ((float) SPEKTRUM_STEER_NEUTRAL - (float)joy_steer) / ((float)SPEKTRUM_STEER_NEUTRAL - (float)SPEKTRUM_STEER_MIN);
-		app->steering_angle = -steering_percent * GOKART_STEER_MAX + GOKART_STEER_MAX;
+		app->steering_angle = -steering_percent * GOKART_STEER_MAX + GOKART_STEER_MAX - 2;
 	}
 }
 
@@ -56,20 +56,9 @@ static void joy_throttle_to_throttle(app_state_t *app){
 	}
 }
 
-static void joy_switch_to_power(app_state_t *app){
-	int emk = app->rc_receiver_state.channels[4].servo_position;
-
-	if (emk == 1706){
-	  HAL_GPIO_WritePin(GPIOE, relay_vcc_Pin|relay_input_Pin, GPIO_PIN_SET);
-	} else{
-	  HAL_GPIO_WritePin(GPIOE, relay_vcc_Pin|relay_input_Pin, GPIO_PIN_RESET);
-	}
-}
-
 static void convert_channels_to_commands(app_state_t *app) {
 	joy_steer_to_steer(app);
 	joy_throttle_to_throttle(app);
-	joy_switch_to_power(app);
 }
 
 static void handle_spektrum_msg(const spektrum_internal_msg_t *msg, void *context) {

@@ -122,5 +122,4 @@ void spektrum_nucleo_irq_handler(spektrum_nucleo_state_t *state, UART_HandleType
 		spektrum_nucleo_handle_idle(state, HAL_GetTick());
 		return;
 	}
-
 };
