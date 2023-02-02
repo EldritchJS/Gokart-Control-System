@@ -26,6 +26,7 @@ static void acquireMEMS(void);
 static void runFusion(void);
 static void transmitFusionResults(void);
 static void transmitIMUReadings(void);
+static void transmitAllData(void);
 
 static float acceleration_mg[3];
 static float angular_rate_mdps[3];
@@ -67,6 +68,21 @@ static void runFusion(void)
   motionFXRun(pdata_in, pdata_out, MOTION_FX_ENGINE_DELTATIME);
 }
 
+static void transmitAllData(void)
+{
+  sprintf((char *)outBuffer,
+	          "%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f,%4.2f\r\n",
+	          acceleration_mg[0], acceleration_mg[1], acceleration_mg[2],
+	          angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2],
+	          magnetic_field_mgauss[0], magnetic_field_mgauss[1], magnetic_field_mgauss[2],
+		         pdata_out->quaternion[0], pdata_out->quaternion[1], pdata_out->quaternion[2],pdata_out->quaternion[3],
+		         pdata_out->rotation[0], pdata_out->rotation[1], pdata_out->rotation[2],
+		         pdata_out->gravity[0], pdata_out->gravity[1], pdata_out->gravity[2],
+		         pdata_out->linear_acceleration[0], pdata_out->linear_acceleration[1], pdata_out->linear_acceleration[2],
+				 pdata_out->heading, pdata_out->headingErr);
+  USART1TxStr(outBuffer);
+}
+
 static void transmitIMUReadings(void)
 {
   sprintf((char *)outBuffer,
@@ -97,6 +113,7 @@ void MEMSTask(void *argument)
   IMUInit();
   motionFXInit();
   motionFXStart();
+  osDelay(1000);
   osTimerStart(taskTimerHandle, 25);
   for(;;)
   {
@@ -105,6 +122,7 @@ void MEMSTask(void *argument)
     runFusion();
     if(isStreamActive())
     {
+#if 0
       if (isFusionSet())
       {
         transmitFusionResults();
@@ -113,6 +131,9 @@ void MEMSTask(void *argument)
       {
         transmitIMUReadings();
       }
+#else
+      transmitAllData();
+#endif
     }
   }
 }

@@ -1,5 +1,5 @@
 #pragma once
-#include "cmsis_os.h"
+#include "cmsis_os2.h"
 
 #define FIFO_RX_SIZE            1024
 #define FIFO_TX_SIZE            1024

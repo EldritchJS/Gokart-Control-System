@@ -14,6 +14,7 @@ extern osTimerId_t taskTimerHandle;
 
 #define FUSION_HEADER_STR "Quaternion0,Quaternion1,Quaternion2,Quaternion3,Rotationn0,Rotation1,Rotation2,Gravity0,Gravity1,Gravity2,LinearAcceleration0,LinearAcceleration1,LinearAcceleration2,Heading,HeadingError"
 #define RAW_HEADER_STR "AccelX,AccelY,AccelZ,GyroX,GyroY,GyroZ,MagX,MagY,MagZ"
+#define COMBINED_HEADER_STR "AccelX(mg),AccelY,AccelZ,GyroX(mdps),GyroY,GyroZ,MagX(mG),MagY,MagZ,Quaternion0,Quaternion1,Quaternion2,Quaternion3,Rotationn0,Rotation1,Rotation2,Gravity0,Gravity1,Gravity2,LinearAcceleration0,LinearAcceleration1,LinearAcceleration2,Heading,HeadingError"
 
 static char lineBuffer[1024];
 static char outBuffer[1024];
@@ -42,9 +43,8 @@ static void processLine(void)
     	if(streamActiveFlag==0)
     	{
     	  streamActiveFlag=1;
-    	  sprintf(outBuffer, "%s\r\n", (fusionSet==1)?(FUSION_HEADER_STR):(RAW_HEADER_STR));
+    	  sprintf(outBuffer, "%s\r\n", COMBINED_HEADER_STR); //(fusionSet==1)?(FUSION_HEADER_STR):(RAW_HEADER_STR));
     	  USART1TxStr(outBuffer);
-//    	  osTimerStart(taskTimerHandle, 25);
     	}
 	    break;
     case 'E':
@@ -54,6 +54,7 @@ static void processLine(void)
 //      	  osTimerStop(taskTimerHandle);
     	}
     	break;
+#if 0
     case 'F':
     	if(streamActiveFlag==0)
     	{
@@ -62,6 +63,7 @@ static void processLine(void)
     	  USART1TxStr(outBuffer);
     	}
     	break;
+#endif
     case 'V':
     	if(streamActiveFlag==0)
     	{
@@ -72,7 +74,7 @@ static void processLine(void)
     case '?':
     	if(streamActiveFlag==0)
     	{
-          USART1TxStr("B - Begin streaming\r\nE - End streaming\r\n? - This menu\r\n");
+          USART1TxStr("B - Begin streaming\r\nE - End streaming\r\nV - Version\r\n? - This menu\r\n");
     	}
     default:
     	break;

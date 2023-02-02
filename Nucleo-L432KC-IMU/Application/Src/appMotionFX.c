@@ -1,5 +1,5 @@
 #include "main.h"
-#include "cmsis_os.h"
+#include "cmsis_os2.h"
 #include <stdio.h>
 #include <string.h>
 #include "appUSART.h"
